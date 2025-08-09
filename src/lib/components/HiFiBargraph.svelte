@@ -4,11 +4,28 @@
 
 	let container: HTMLDivElement;
 	let bars: HTMLDivElement[] = [];
+    let deliveryLabel: HTMLDivElement;
+    let supportLabel: HTMLDivElement;
+    let rescueLabel: HTMLDivElement;
 
 	onMount(() => {
 		const handleMouseMove = (e: MouseEvent) => {
 			const rect = container.getBoundingClientRect();
 			const mouseX = e.clientX - rect.left;
+            const sectionWidth = rect.width / 3;
+
+            clearLabelHighlight();
+
+            if (mouseX >= 0 && mouseX < sectionWidth) {
+                console.log('Adding highlighted to deliveryLabel');
+                deliveryLabel.classList.add('highlighted');
+            } else if (mouseX >= sectionWidth && mouseX < sectionWidth * 2) {
+                console.log('Adding highlighted to supportLabel');
+                supportLabel.classList.add('highlighted');
+            } else if (mouseX >= sectionWidth * 2 && mouseX <= rect.width) {
+                console.log('Adding highlighted to rescueLabel');
+                rescueLabel.classList.add('highlighted');
+            }
 
 			bars.forEach((bar, i) => {
                 if(!bar) return;
@@ -20,12 +37,26 @@
 			});
 		};
 
+        const handleMouseLeave = () => {
+            clearLabelHighlight();
+        };
+
 		container.addEventListener('mousemove', handleMouseMove);
+        container.addEventListener('mouseleave', handleMouseLeave);
+
 
 		return () => {
 			container.removeEventListener('mousemove', handleMouseMove);
+            container.removeEventListener('mouseleave', handleMouseLeave);
 		};
 	});
+
+    function clearLabelHighlight() {
+        console.log('Clearing label highlights');
+        if (deliveryLabel) deliveryLabel.classList.remove('highlighted');
+        if (supportLabel) supportLabel.classList.remove('highlighted');
+        if (rescueLabel) rescueLabel.classList.remove('highlighted');
+    }
 
     function navigateTo(path: string) {
         goto(path);
@@ -92,11 +123,11 @@
         </a>
     </div>
     <div class="labels-container">
-        <div class="label-column"><span>delivery</span></div>
+        <div class="label-column" bind:this={deliveryLabel} on:click={() => navigateTo('/delivery')} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigateTo('/delivery'); }} role="button" tabindex="0"><span>delivery</span></div>
         <div class="separator"></div>
-        <div class="label-column"><span>support</span></div>
+        <div class="label-column" bind:this={supportLabel} on:click={() => navigateTo('/support')} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigateTo('/support'); }} role="button" tabindex="0"><span>support</span></div>
         <div class="separator"></div>
-        <div class="label-column"><span>rescue</span></div>
+        <div class="label-column" bind:this={rescueLabel} on:click={() => navigateTo('/rescue')} on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigateTo('/rescue'); }} role="button" tabindex="0"><span>rescue</span></div>
     </div>
 </div>
 
@@ -228,5 +259,14 @@
         font-weight: 700;
         text-transform: uppercase;
         text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+        transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+
+    :global(.label-column.highlighted span) {
+        color: #000000;
+        background-color: #f0f8ff;
+        text-shadow: none;
+        padding: 2px 5px;
+        border-radius: 3px;
     }
 </style>
